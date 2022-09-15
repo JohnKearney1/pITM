@@ -1,0 +1,11 @@
+{
+  "default": {
+    "subject": "Loops4{NAME}",
+    "body": "Hey {NAME},\nI watched every single dez wright tiktok this week and felt super inspired so I made a bunch of synth loops for you.\nEnjoy!\n\n- Jack\n@prodlanders"
+  },
+
+  "Template 1": {
+    "subject": "Beats4{NAME}",
+    "body": "Hey {NAME},\nI bought $600 worth of MIDI's this week, let's get these beats sold!\n\n- Jack\n@prodlanders"
+  }
+}
