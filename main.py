@@ -121,7 +121,6 @@ def getFiles(fileDir):
 # > subject -> STRING : Subject line of the email
 # > body -> STRING : Main content of the email
 # > files -> STRING ARRAY : Array containing the relative locations of the files to attach as strings
-# > creds -> ? UN-USED ? : Credential token
 def sendEmail(recipientEmail, subject, body, files):
     try:
 
