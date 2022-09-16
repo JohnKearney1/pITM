@@ -80,7 +80,7 @@ def auth(client_secret_json="data/auth/client_secret.json"):
     return credentials
 
 
-def composeMail(template):
+def composeMail(template="default"):
     # This loops the logic that sends the email
     # USAGE LIMITS: https://developers.google.com/gmail/api/reference/quota?hl=en
     mailingList = templateParser.loadContacts()
@@ -106,7 +106,7 @@ def composeMail(template):
         # If recipient has an email AND a name entry use this template
         if len(recipient) > 1:
             # Load a custom template for the current recipient
-            subject, body = templateParser.loadTemplate(mailingList[x][1], template)
+            subject, body = templateParser.loadTemplate(name=mailingList[x][1], template=template)
 
         # Otherwise use this template
         else:
@@ -168,7 +168,7 @@ def sendEmail(recipientEmail, subject, body, files):
 
         # Attach files
         for attachment in files:
-            if os.path.getsize(attachment) < 24550000:
+            if os.path.getsize(attachment) < 24550000 and attachment.__str__()[0:12] != "data/files/.":
                 # Guess the mimetype
                 content_type, encoding = mimetypes.guess_type(attachment)
                 if content_type is None or encoding is not None:
@@ -194,7 +194,7 @@ def sendEmail(recipientEmail, subject, body, files):
                 message.attach(myFile)
 
             else:
-                print("File " + attachment + " too large... Skipping.")
+                print("\npITM > File " + attachment + " skipped...")
 
         # Save the raw string
         raw_string = base64.urlsafe_b64encode(message.as_bytes()).decode()

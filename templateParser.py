@@ -23,16 +23,20 @@ def loadTemplate(template, name="ALTERNATE_TEMPLATE"):
             subject = data[template]['subject']
             body = data[template]['body']
         else:
-            # use the specified template if so
+            # use the default template if not
             subject = data['default']['subject']
             body = data['default']['body']
 
         if body.find("{NAME}") >= 0:
             formattedBody = body.replace("{NAME}", name)
+        else:
+            formattedBody = body
 
         if subject.find("{NAME}") >= 0:
             # Handle {NAME} variables
             formattedSubject = subject.replace("{NAME}", name)
+        else:
+            formattedSubject = subject
 
         f.close()
 
