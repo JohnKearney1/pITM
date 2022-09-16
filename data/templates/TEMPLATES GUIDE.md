@@ -13,6 +13,10 @@ Both are expressed as string variables, in which you can type the key `{NAME}` a
 
 See `Template 1.json` for an example Template.
 
+## Alternate Templates
+Alternate templates have both a `subject_alt` and `body_alt` attribute IN ADDITION to the normal `subject` and `body` attributes.
+Alternate templates allow you to account for missing names in email lists, by having alternate text typed out that doesn't include a name variable.
+
 ## To-Do
 
 1. Add Date Variable

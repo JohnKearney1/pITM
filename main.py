@@ -42,7 +42,7 @@ def auth(client_secret_json="data/auth/client_secret.json"):
 
     # token.pickle stores the user's credentials from previously successful logins
     if os.path.exists('data/auth/token.pickle'):
-        print('AUTH >> Loading Credentials From File')
+        print('pITM >> Loading Credentials From File')
         # Open the pickle file (in read byte mode) and store the token under credentials
         with open('data/auth/token.pickle', 'rb') as token:
             credentials = pickle.load(token)
@@ -50,10 +50,10 @@ def auth(client_secret_json="data/auth/client_secret.json"):
     # If there are no valid credentials available, then either refresh the token or log in.
     if not credentials or not credentials.valid:
         if credentials and credentials.expired and credentials.refresh_token:
-            print('AUTH >> Refreshing Access Token...')
+            print('pITM >> Refreshing Access Token...')
             credentials.refresh(Request())
         else:
-            print('AUTH >> Fetching New Tokens')
+            print('pITM >> Fetching New Tokens')
 
             # Create a flow object & Define the scope of the information our script can access
             # We would define our client_secret_json location here, but the default location is in the params
@@ -71,7 +71,7 @@ def auth(client_secret_json="data/auth/client_secret.json"):
 
             # Save the credentials for the next run
             with open('data/auth/token.pickle', 'wb') as f:
-                print('AUTH >> Saving Credentials for Future Use')
+                print('pITM >> Saving Credentials for Future Use')
                 pickle.dump(credentials, f)
 
     # Now we have our credentials (token, refresh_token, token_uri, client_id, client_seceret, scopes)
@@ -84,6 +84,17 @@ def composeMail(template):
     # This loops the logic that sends the email
     # USAGE LIMITS: https://developers.google.com/gmail/api/reference/quota?hl=en
     mailingList = templateParser.loadContacts()
+    x = 1
+    print("\n======== Mailing List ========")
+    for recipient in mailingList:
+        print(x.__str__() + "] " + recipient.__str__())
+        x = x + 1
+
+    # Allow user to confirm sends
+    lastChance = input("\n\npITM > Ready to send? Press enter to send or q to quit: ")
+    if lastChance.lower() == "q":
+        print("pITM > Exiting...")
+        sys.exit(0)
 
     # We will compose and format our email within the for loop, so we don't have to store every variation in a variable
     x = 0
@@ -91,21 +102,33 @@ def composeMail(template):
         # recipient[0] == email addr
         # recipient[1] == name
 
-        # Load a custom template for the current recipient
-        subject, body = templateParser.loadTemplate(mailingList[x][1], template)
+        # print(recipient)
+
+        if len(recipient) > 1:
+            # Load a custom template for the current recipient
+            subject, body = templateParser.loadTemplate(mailingList[x][1], template)
+
+        else:
+            subject, body = templateParser.loadTemplate(template=template)
+
+
 
         print("\n\nSending Email No." + (x + 1).__str__())
-        print("To: " + recipient[1])
+
+        if len(recipient) > 1:
+            print("To: " + recipient[1])
+        else:
+            print("To: <NO NAME SPECIFIED>")
+
         print("E-Mail Addr: " + recipient[0])
         print("Subject: " + subject)
-        print("Body:\n___________________________________________________________________\n" + body)
+        print("Body: " + body)
 
 
-        # Pause execution for 2 seconds to ensure we don't exceed rate limits
-        time.sleep(5)
+        # Pause execution for 0.6 seconds to ensure we don't exceed rate limits
+        time.sleep(0.6)
         sendEmail(recipientEmail=recipient[0], subject=subject, body=body,
                   files=getFiles("data/files"))
-        # C:/Users/kearn/OneDrive/Desktop/pITM/
         x = x + 1
 
 
@@ -174,8 +197,9 @@ def sendEmail(recipientEmail, subject, body, files):
             body={'raw': raw_string}
         ).execute()
 
-        print("\nRESPONSE > ")
-        print(response)
+
+
+        print("\nRESPONSE > " + str(response))
 
     except HttpError as error:
         print(F'An error occurred: {error}')
@@ -189,22 +213,16 @@ def sendEmail(recipientEmail, subject, body, files):
 
 def main():
     # Authenticate on startup and store the credential token in `data/auth/token.pickle`
-    print("STARTUP >> Initializing Google oAuth 2.0")
+    # print("STARTUP >> Initializing Google oAuth 2.0")
     auth()
-    print("STARTUP >> Authenticated")
-    time.sleep(2)
+    # print("STARTUP >> Authenticated")
+    # time.sleep(2)
 
     # Get the template ID from the user
-    templateID = input("Enter the name of the template to use, or leave blank to use the default template: ")
+    templateID = input("pITM > Enter the name of the template to use, or press enter to use the default template: ")
     if templateID is None or "":
         # If nothing specified, first template is default
         templateID = "default"
-
-    # Allow user to confirm sends
-    lastChance = input("Ready to send? Press enter. To quit, type q: ")
-    if lastChance.lower() == "q":
-        print("Exiting...")
-        sys.exit(0)
 
     # Send the emails
     composeMail(template=templateID)

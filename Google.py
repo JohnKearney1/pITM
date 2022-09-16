@@ -47,7 +47,7 @@ def Create_Service(*scope):
 
     try:
         service = build(API_SERVICE_NAME, API_VERSION, credentials=cred)
-        print('\nGOOGLE >> Gmail service created successfully')
+        print('\nGOOGLE > E-Mail Sending, awaiting response...')
         return service
     except Exception as e:
         print('Unable to connect.')
