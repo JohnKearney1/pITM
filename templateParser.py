@@ -9,32 +9,10 @@ import pandas as pd
 # Local file reading
 # > This method retrieves the TEMPLATE email from a json file in the script's templates folder
 def loadTemplate(template, name="ALTERNATE_TEMPLATE"):
-    if name == "ALTERNATE_TEMPLATE":
-        # Open the Templates json
-        f = open('data/templates/Templates.json')
-        data = json.load(f)
+    formattedSubject = ""
+    formattedBody = ""
 
-        subject = "NONE"
-        formattedSubject = "NONE"
-        formattedBody = "NONE"
-
-        # Check if template exists in json
-        if template in data and data[template]['subject_alt'] != None:
-            # use the specified template if so
-            subject = data[template]['subject_alt']
-
-        if template in data and data[template]['body_alt'] != None:
-            body = data[template]['body_alt']
-
-        else:
-            # use the specified template if so
-            subject = data['default']['subject']
-            body = data['default']['body']
-
-        formattedSubject = subject
-        formattedBody = body
-
-    else:
+    if name != "ALTERNATE_TEMPLATE":
         # Open the Templates json
         f = open('data/templates/Templates.json')
         data = json.load(f)
@@ -55,6 +33,18 @@ def loadTemplate(template, name="ALTERNATE_TEMPLATE"):
         if subject.find("{NAME}") >= 0:
             # Handle {NAME} variables
             formattedSubject = subject.replace("{NAME}", name)
+
+        f.close()
+
+    else:
+        f = open('data/templates/Templates.json')
+        data = json.load(f)
+
+        # use the specified template if so
+        subject = data['default']['subject']
+        body = data['default']['body']
+
+        f.close()
 
         formattedSubject = subject
         formattedBody = body

@@ -103,11 +103,12 @@ def composeMail(template):
         # recipient[1] == name
 
         # print(recipient)
-
+        # If recipient has an email AND a name entry use this template
         if len(recipient) > 1:
             # Load a custom template for the current recipient
             subject, body = templateParser.loadTemplate(mailingList[x][1], template)
 
+        # Otherwise use this template
         else:
             subject, body = templateParser.loadTemplate(template=template)
 
@@ -162,11 +163,18 @@ def sendEmail(recipientEmail, subject, body, files):
         message['Subject'] = subject
         message.attach(MIMEText(body, 'plain'))
 
+        main_type = ""
+        sub_type = ""
+
         # Attach files
         for attachment in files:
             if os.path.getsize(attachment) < 24550000:
                 # Guess the mimetype
                 content_type, encoding = mimetypes.guess_type(attachment)
+                if content_type is None or encoding is not None:
+
+                    content_type = 'application/octet-stream'
+
                 main_type, sub_type = content_type.split('/', 1)
                 file_name = os.path.basename(attachment)
 
