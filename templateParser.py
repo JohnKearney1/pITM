@@ -9,8 +9,6 @@ import pandas as pd
 # Local file reading
 # > This method retrieves the TEMPLATE email from a json file in the script's templates folder
 def loadTemplate(name, template):
-    # name not being provided correctly
-    print("Name: " + name)
 
     # Open the Templates json
     f = open('data/templates/Templates.json')
@@ -36,11 +34,34 @@ def loadTemplate(name, template):
 def loadContacts():
     # 'data/Contacts.txt'
 
-    mailingList = []
-
+    # Get number of lines in text file
     with open('data/Contacts.txt') as f:
-        line = f.readline()
-        mailingList.append(line.split(","))
+        text = f.readlines()
+        size = len(text)
 
+    # Use that size to init a 2d array
+    mailingList = [[""]*2]*size
+
+    x = 0
+    with open('data/Contacts.txt') as f:
+        nextLine = True
+        while nextLine:
+            # Read the first line and split into 2 substrings: email & name
+            line = f.readline()
+            substring = line.split(" ")
+
+            # Remove \n (new line) escape code
+            substring[0] = substring[0].replace('\n', '')
+            substring[1] = substring[1].replace('\n', '')
+
+            # Set the substring list to the current iter of our mailingList
+            mailingList[x] = substring
+
+            # Iterate & ensure we haven't read all the lines in the file yet, if we have then break
+            x = x + 1
+            if x >= size:
+                nextLine = False
+
+    print(mailingList)
 
     return mailingList

@@ -24,7 +24,6 @@ def Create_Service(*scope):
 
     # Gmail send email scope access: https://developers.google.com/gmail/api/auth/scopes?hl=en
     SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
-    print(SCOPES)
 
     # Load a cached credentials file (pickle) if exists; if not, authenticate again
     cred = None
@@ -48,7 +47,7 @@ def Create_Service(*scope):
 
     try:
         service = build(API_SERVICE_NAME, API_VERSION, credentials=cred)
-        print(API_SERVICE_NAME, 'service created successfully')
+        print('\nGOOGLE >> Gmail service created successfully')
         return service
     except Exception as e:
         print('Unable to connect.')

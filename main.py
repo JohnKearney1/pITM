@@ -1,25 +1,26 @@
 # main.py
-# PITM - @johnkearney1
+# pITM - @johnkearney1
 # > The goal of this script is to easily automate sending
-# > individualized emails to a variety of email addresses using Google SMTP servers.
+# > individualized emails to a variety of email addresses using Google SMTP servers & OAuth2.
 
-# Imports
+# System Imports
 import mimetypes
 import os
-import pathlib
 import pickle
-
-# From google (oauth 2.0 flow & requests class)
+import socket
 import sys
 import time
 
-import Google
+# From Google (oauth 2.0 flow & requests class)
 import templateParser
 from Google import Create_Service
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
+
+# Error handling
 from googleapiclient.errors import HttpError
+import httplib2.error
 
 # Composing & encoding email
 import base64
@@ -29,8 +30,6 @@ from email import encoders
 from email.mime.base import MIMEBase
 
 # FIELD VARIABLES
-from googleapiclient.errors import HttpError
-
 SCOPES = 'https://www.googleapis.com/auth/gmail.send'
 CLIENT_SECRET_FILE = 'data/auth/client_secret.json'
 APPLICATION_NAME = 'pITM-01'
@@ -84,7 +83,6 @@ def auth(client_secret_json="data/auth/client_secret.json"):
 def composeMail(template):
     # This loops the logic that sends the email
     # USAGE LIMITS: https://developers.google.com/gmail/api/reference/quota?hl=en
-
     mailingList = templateParser.loadContacts()
 
     # We will compose and format our email within the for loop, so we don't have to store every variation in a variable
@@ -94,10 +92,17 @@ def composeMail(template):
         # recipient[1] == name
 
         # Load a custom template for the current recipient
-        subject, body = templateParser.loadTemplate(recipient[1], template)
+        subject, body = templateParser.loadTemplate(mailingList[x][1], template)
+
+        print("\n\nSending Email No." + (x + 1).__str__())
+        print("To: " + recipient[1])
+        print("E-Mail Addr: " + recipient[0])
+        print("Subject: " + subject)
+        print("Body:\n___________________________________________________________________\n" + body)
+
 
         # Pause execution for 2 seconds to ensure we don't exceed rate limits
-        time.sleep(2)
+        time.sleep(5)
         sendEmail(recipientEmail=recipient[0], subject=subject, body=body,
                   files=getFiles("data/files"))
         # C:/Users/kearn/OneDrive/Desktop/pITM/
@@ -136,7 +141,7 @@ def sendEmail(recipientEmail, subject, body, files):
 
         # Attach files
         for attachment in files:
-            if os.path.getsize(attachment) < 24500000:
+            if os.path.getsize(attachment) < 24550000:
                 # Guess the mimetype
                 content_type, encoding = mimetypes.guess_type(attachment)
                 main_type, sub_type = content_type.split('/', 1)
@@ -169,10 +174,17 @@ def sendEmail(recipientEmail, subject, body, files):
             body={'raw': raw_string}
         ).execute()
 
+        print("\nRESPONSE > ")
         print(response)
 
     except HttpError as error:
         print(F'An error occurred: {error}')
+
+    except socket.gaierror and httplib2.error.ServerNotFoundError as error:
+        print(F'\nIs the internet is off? {error}')
+        if input("Press `q` to quit, or enter to try again: ") == 'q':
+            sys.exit(0)
+
 
 
 def main():
@@ -180,6 +192,7 @@ def main():
     print("STARTUP >> Initializing Google oAuth 2.0")
     auth()
     print("STARTUP >> Authenticated")
+    time.sleep(2)
 
     # Get the template ID from the user
     templateID = input("Enter the name of the template to use, or leave blank to use the default template: ")

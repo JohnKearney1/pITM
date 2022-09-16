@@ -17,3 +17,4 @@ See `Template 1.json` for an example Template.
 
 1. Add Date Variable
 2. Add template randomization
+3. Add variable customization
