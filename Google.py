@@ -5,9 +5,10 @@
 # Imports
 import pickle
 import os
+from datetime import datetime
+
 from google_auth_oauthlib.flow import Flow, InstalledAppFlow
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from google.auth.transport.requests import Request
 
 # This method triggers the oAuth 2.0 "Consent" screen
@@ -47,9 +48,27 @@ def Create_Service(*scope):
 
     try:
         service = build(API_SERVICE_NAME, API_VERSION, credentials=cred)
-        print('\nGOOGLE > E-Mail Sending, awaiting response...')
+        print('\nGoogle > E-Mail Sending, awaiting response...')
+        log("E-Mail Sending, awaiting response...")
         return service
     except Exception as e:
-        print('Unable to connect.')
+        print('\nGoogle > Unable to connect...')
+        log("Unable to connect: " + e.__str__())
         print(e)
         return None
+
+
+def log(text):
+    # Open the log in append mode `a`
+    with open('data/log.txt', 'a') as f:
+        # datetime object containing current date and time
+        now = datetime.now()
+
+        # mm/dd/YY H:M:S
+        dt_string = now.strftime("%H:%M:%S")
+
+        # Write the text with the time and log message
+        f.write("\n" + dt_string + " > " + text)
+
+        # Close the file
+        f.close()
