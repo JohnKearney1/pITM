@@ -1,4 +1,4 @@
-# pITM
+# [pITM](https://github.com/JohnKearney1/pITM/releases)
 pITM ("Packs In The Mail") is a python email script designed specifically by audio professionals for effective, *informal*, email marketing in the music industry. 
 This project seeks to be a no-nonsense, lightweight solution for free, open source e-mail marketing with the bells and whistles, but no frills.
 
