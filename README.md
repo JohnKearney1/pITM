@@ -1,5 +1,6 @@
 # pITM
-pITM ("Packs In The Mail") is a python email script designed specifically by audio professionals for effective, *informal*, email marketing in the music industry.
+pITM ("Packs In The Mail") is a python email script designed specifically by audio professionals for effective, *informal*, email marketing in the music industry. 
+This project seeks to be a no-nonsense, lightweight solution for free, open source e-mail marketing with the bells and whistles, but no frills.
 
 pITM takes in a list of emails and first names, then composes personalized emails using custom templates to reach out to every contact individually.
 Using CC and BCC is easy and fast, but largely ineffective in the music industry, as a feeling of *inexclusivity* towards material is discouraging for producers, artists, and engineers.
