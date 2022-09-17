@@ -1,0 +1,2 @@
+This is simply an empty .txt file that is shipped with the package to help developers account for all default files.
+This file starts with a period `.` and will be excluded from email attachments as a result. Use this wisely!

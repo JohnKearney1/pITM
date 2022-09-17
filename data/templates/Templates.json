@@ -1,17 +1,12 @@
 {
   "default": {
-    "subject": "LoopsFromLanders",
-    "body": "Hey!\nI watched every single dez wright tiktok this week and felt super inspired so I made a bunch of synth loops for you.\nEnjoy!\n\n- Jack\n@prodlanders"
-  },
+    "subject": "Default Subject",
+    "body": "Hey!\nThe default body should not include any name variables!\nThis is because the program has to have a fallback template in the event a contact email doesn't have an associated name!\n\n- Devs\n@gawxy",
 
+
+  },
   "Template 1": {
     "subject": "Beats4{NAME}",
-    "body": "Hey {NAME},\nI bought $600 worth of MIDI's this week, let's get these beats sold!\n\n- Jack\n@prodlanders"
-  },
-  "Template 2": {
-    "subject": "Loops4{NAME}",
-    "subject_alt": "LoopsFromLanders",
-    "body": "Hey {NAME},\nhere's some beats! (jk it's a test file).",
-    "body_alt": "What's up!\n Love making beats yoooo!!!1!! im hard as h-@prodlanders"
+    "body": "Hey {NAME},\nI bought $6500 worth of midi files this week; let's get these beats sold!\n- Jack\n@prodlanders"
   }
 }

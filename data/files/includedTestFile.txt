@@ -1,0 +1,1 @@
+This is simply an empty .txt file that is shipped with the package to help developers account for all default files.

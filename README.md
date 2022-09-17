@@ -1,16 +1,19 @@
 # pITM
- pITM ("Packs In The Mail") is a python email script designed for musicians and audio professionals.
- pITM uses a templating system to easily customize emails that feel personal, but can be effectively automated to reach hundreds of people at once.
+pITM ("Packs In The Mail") is a python email script designed specifically by audio professionals for effective, *informal*, email marketing in the music industry.
+
+pITM takes in a list of emails and first names, then composes personalized emails using custom templates to reach out to every contact individually.
+Using CC and BCC is easy and fast, but largely ineffective in the music industry, as a feeling of *inexclusivity* towards material is discouraging for producers, artists, and engineers.
+i.e: When hundreds of audio professionals all get the same email, they immediately realize they were 1/800 people to recieve the same six loops or beats and don't even look at them.
 
 **WARNING: THIS PROJECT IS A WORK IN PROGRESS USE AT YOUR OWN RISK. BUGS EXIST.**
 
 
 # Developers: First Time Setup
-> 1. Add your [client_secret.json](https://developers.google.com/gmail/api/auth/about-auth) to `data/auth/`.
-> > Note: Do not edit the contents of the file  
-> > Note: File must be named `client_secret.json`, rename the file if it is not by default.
+> 1. Add your [client_secret.json](https://developers.google.com/gmail/api/auth/about-auth) to `pITM/data/auth/`
+> > **Note:** Do not edit the contents of the file if you aren't sure what's what.  
+> > **Note:** File must be named `client_secret.json`, rename the file if it is not by default.
 > 2. Edit the `Contacts.txt` to include your contacts and names
-> > 
+> > **Note:** They should be specified in the format `<email> <firstName>`
 
 # Architecture
 

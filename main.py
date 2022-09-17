@@ -221,18 +221,16 @@ def sendEmail(recipientEmail, subject, body, files):
 
 def main():
     # Authenticate on startup and store the credential token in `data/auth/token.pickle`
-    # print("STARTUP >> Initializing Google oAuth 2.0")
     auth()
-    # print("STARTUP >> Authenticated")
-    # time.sleep(2)
 
     # Get the template ID from the user
     templateID = input("pITM > Enter the name of the template to use, or press enter to use the default template: ")
+
+    # If nothing specified, template is set to default
     if templateID is None or "":
-        # If nothing specified, first template is default
         templateID = "default"
 
-    # Send the emails
+    # Compose the emails
     composeMail(template=templateID)
 
 
