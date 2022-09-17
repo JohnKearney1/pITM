@@ -57,7 +57,7 @@ def Create_Service(*scope):
         print(e)
         return None
 
-
+# Logging method
 def log(text):
     # Open the log in append mode `a`
     with open('data/log.txt', 'a') as f:
