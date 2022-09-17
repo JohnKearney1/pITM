@@ -1,9 +1,7 @@
 {
   "default": {
     "subject": "Default Subject",
-    "body": "Hey!\nThe default body should not include any name variables!\nThis is because the program has to have a fallback template in the event a contact email doesn't have an associated name!\n\n- Devs\n@gawxy",
-
-
+    "body": "Hey!\nThe default body should not include any name variables!\nThis is because the program has to have a fallback template in the event a contact email doesn't have an associated name!\n\n- Devs\n@gawxy"
   },
   "Template 1": {
     "subject": "Beats4{NAME}",

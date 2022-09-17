@@ -1,7 +1,5 @@
 # main.py
-# pITM - @johnkearney1
-# > The goal of this script is to easily automate sending
-# > individualized emails to a variety of email addresses using Google SMTP servers & OAuth2.
+# pITM - v1.1.0
 
 # System Imports
 import mimetypes
@@ -12,11 +10,12 @@ import sys
 import time
 
 # From Google (oauth 2.0 flow & requests class)
+import oauthlib.oauth2.rfc6749.errors
+
 import templateParser
 from Google import Create_Service
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
 
 # Error handling
 from googleapiclient.errors import HttpError
@@ -29,50 +28,94 @@ from email.mime.text import MIMEText
 from email import encoders
 from email.mime.base import MIMEBase
 
-# FIELD VARIABLES
-SCOPES = 'https://www.googleapis.com/auth/gmail.send'
-CLIENT_SECRET_FILE = 'data/auth/client_secret.json'
-APPLICATION_NAME = 'pITM-01'
+# Date & time
+from datetime import datetime
 
 
-# Authentication with Google SMTP
+# On startup, we clear the log.txt
+def newLog():
+    # Create a new log.txt or clear the existing one
+    with open('data/log.txt', 'w') as f:
+        # datetime object containing current date and time
+        now = datetime.now()
+
+        # mm/dd/YY H:M:S
+        dt_string = now.strftime("%m/%d/%Y %H:%M:%S")
+
+        # Write the header to the file
+        f.write(dt_string + " > pITM Started")
+
+        # Close the file
+        f.close()
+
+
+# Writes some text to the file with the time
+def log(text):
+    # Open the log in append mode `a`
+    with open('data/log.txt', 'a') as f:
+        # datetime object containing current date and time
+        now = datetime.now()
+
+        # mm/dd/YY H:M:S
+        dt_string = now.strftime("%H:%M:%S")
+
+        # Write the text with the time and log message
+        f.write("\n" + dt_string + " > " + text)
+
+        # Close the file
+        f.close()
+
+
+# Authentication with Google OAuth
 # AUTH IS COMPLETED VIA WEB BROWSER
+# > client_secret_json -> STRING : Relative location of the client_secret.json file
 def auth(client_secret_json="data/auth/client_secret.json"):
-    credentials = None
+    try:
+        credentials = None
 
-    # token.pickle stores the user's credentials from previously successful logins
-    if os.path.exists('data/auth/token.pickle'):
-        print('pITM >> Loading Credentials From File')
-        # Open the pickle file (in read byte mode) and store the token under credentials
-        with open('data/auth/token.pickle', 'rb') as token:
-            credentials = pickle.load(token)
+        # token.pickle stores the user's credentials from previously successful logins
+        if os.path.exists('data/auth/token.pickle'):
+            # print('pITM >> Loading credentials from cache...')
+            log("Loading credentials from cache")
+            # Open the pickle file (in read byte mode) and store the token under credentials
+            with open('data/auth/token.pickle', 'rb') as token:
+                credentials = pickle.load(token)
+                log("Credentials loaded")
 
-    # If there are no valid credentials available, then either refresh the token or log in.
-    if not credentials or not credentials.valid:
-        if credentials and credentials.expired and credentials.refresh_token:
-            print('pITM >> Refreshing Access Token...')
-            credentials.refresh(Request())
-        else:
-            print('pITM >> Fetching New Tokens')
+        # If there are no valid credentials available, then either refresh the token or log in.
+        if not credentials or not credentials.valid:
+            if credentials and credentials.expired and credentials.refresh_token:
+                # print('\npITM >> Refreshing access token...')
+                log("Refreshing access token")
+                credentials.refresh(Request())
+            else:
+                # print('\npITM >> Fetching new tokens...')
+                log("Fetching new tokens")
 
-            # Create a flow object & Define the scope of the information our script can access
-            # We would define our client_secret_json location here, but the default location is in the params
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'data/auth/client_secret.json',
-                scopes=[
-                    'https://www.googleapis.com/auth/gmail.send'
-                ]
-            )
+                # Create a flow object & Define the scope of the information our script can access
+                # We would define our client_secret_json location here, but the default location is in the params
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'data/auth/client_secret.json',
+                    scopes=[
+                        'https://www.googleapis.com/auth/gmail.send'
+                    ]
+                )
 
-            # Create a local server to run the oAuth consent screen
-            # The second parameter `prompt` is set so that we ALWAYS get a refresh token back from oAuth
-            flow.run_local_server(port=8080, prompt='consent')
-            credentials = flow.credentials
+                # Create a local server to run the oAuth consent screen
+                # The second parameter `prompt` is set so that we ALWAYS get a refresh token back from oAuth
+                flow.run_local_server(port=8080, prompt='consent')
+                credentials = flow.credentials
 
-            # Save the credentials for the next run
-            with open('data/auth/token.pickle', 'wb') as f:
-                print('pITM >> Saving Credentials for Future Use')
-                pickle.dump(credentials, f)
+                # Save the credentials for the next run
+                with open('data/auth/token.pickle', 'wb') as f:
+                    # print('\npITM >> Saving credentials to cache...')
+                    log("Saving credentials to cache")
+                    pickle.dump(credentials, f)
+                    log("Credentials saved to 'data/auth/token.pickle'")
+    except oauthlib.oauth2.rfc6749.errors.AccessDeniedError as error:
+        print("\npITM > Looks like you denied us access during OAuth. Without that, we can't send any emails!")
+        log("User canceled authentication before it was complete")
+        terminate(error)
 
     # Now we have our credentials (token, refresh_token, token_uri, client_id, client_seceret, scopes)
     # print(credentials.to_json())
@@ -80,72 +123,61 @@ def auth(client_secret_json="data/auth/client_secret.json"):
     return credentials
 
 
-def composeMail(template="default"):
-    # This loops the logic that sends the email
-    # USAGE LIMITS: https://developers.google.com/gmail/api/reference/quota?hl=en
-    mailingList = templateParser.loadContacts()
-    x = 1
-    print("\n======== Mailing List ========")
-    for recipient in mailingList:
-        print(x.__str__() + "] " + recipient.__str__())
-        x = x + 1
+# This is the logic that composes the elements of the email, this is an iterative method, you must call it from a loop.
+# > index -> INT : index of the mailingList entry to search. 0 by default.
+# > template -> STRING : json key string of the Template to use, uses default template by default.
+# > mailingList -> STRING ARRAY (2D) : Holds the email and name of each recipient. Loads from Contacts.txt by default.
+def composeMail(index=0, template="default", mailingList=templateParser.loadContacts()):
+    # mailingList[index][0] == email addr
+    # mailingList[index][1] == name
+    # mailingList[index] == ['<email>', '<name>']
 
-    # Allow user to confirm sends
-    lastChance = input("\n\npITM > Ready to send? Press enter to send or q to quit: ")
-    if lastChance.lower() == "q":
-        print("pITM > Exiting...")
-        sys.exit(0)
+    # If recipient has an email AND a name entry use this template
+    if len(mailingList[index]) > 1:
+        # Load a custom template for the current recipient
+        subject, body = templateParser.loadTemplate(name=mailingList[index][1], template=template)
 
-    # We will compose and format our email within the for loop, so we don't have to store every variation in a variable
-    x = 0
-    for recipient in mailingList:
-        # recipient[0] == email addr
-        # recipient[1] == name
+    # Otherwise use this template
+    else:
+        subject, body = templateParser.loadTemplate(template=template)
 
-        # print(recipient)
-        # If recipient has an email AND a name entry use this template
-        if len(recipient) > 1:
-            # Load a custom template for the current recipient
-            subject, body = templateParser.loadTemplate(name=mailingList[x][1], template=template)
+    # Tell the user what the email looks like:
+    print("\nEmail No." + (index + 1).__str__())
+    log("Email No." + (index + 1).__str__())
 
-        # Otherwise use this template
-        else:
-            subject, body = templateParser.loadTemplate(template=template)
+    # If the mailing list includes a name for this entry print the name of the recipient
+    if len(mailingList[index]) > 1:
+        print("Name: " + mailingList[index][1])
+        log("Name: " + mailingList[index][1])
 
+    # Otherwise, print that we don't know the name
+    else:
+        print("Name: Unknown")
+        log("Name: Unknown")
 
+    # Print the rest of the information
+    print("E-Mail: " + mailingList[index][0])
+    log("E-Mail: " + mailingList[index][0])
+    print("Subject: " + subject)
+    log("Subject: " + subject)
+    print("Body: " + body)
+    log("Body: \n\n" + body + "\n\n")
 
-        print("\n\nSending Email No." + (x + 1).__str__())
-
-        if len(recipient) > 1:
-            print("To: " + recipient[1])
-        else:
-            print("To: <NO NAME SPECIFIED>")
-
-        print("E-Mail Addr: " + recipient[0])
-        print("Subject: " + subject)
-        print("Body: " + body)
+    return subject, body
 
 
-        # Pause execution for 0.6 seconds to ensure we don't exceed rate limits
-        time.sleep(0.6)
-        sendEmail(recipientEmail=recipient[0], subject=subject, body=body,
-                  files=getFiles("data/files"))
-        x = x + 1
-
-
-# Local file reading
-# > Attaches all files from a specified directory to the email
-def getFiles(fileDir):
+# Returns a list of the files inside of a directory (`data/files` by default) with
+# fileDir -> STRING : Directory of files to attach to each email
+def getFiles(fileDir="data/files"):
     fileList = []
 
     for item in os.listdir(fileDir):
         fileList.append(fileDir + '/' + item)
 
-    print(fileList)
     return fileList
 
 
-# Client + Server Interaction
+# USAGE LIMITS: https://developers.google.com/gmail/api/reference/quota?hl=en
 # > recipientEmail -> STRING : Email address of the intended recipient
 # > subject -> STRING : Subject line of the email
 # > body -> STRING : Main content of the email
@@ -169,10 +201,10 @@ def sendEmail(recipientEmail, subject, body, files):
         # Attach files
         for attachment in files:
             if os.path.getsize(attachment) < 24550000 and attachment.__str__()[0:12] != "data/files/.":
+                log("Uploading " + attachment.__str__())
                 # Guess the mimetype
                 content_type, encoding = mimetypes.guess_type(attachment)
                 if content_type is None or encoding is not None:
-
                     content_type = 'application/octet-stream'
 
                 main_type, sub_type = content_type.split('/', 1)
@@ -194,10 +226,14 @@ def sendEmail(recipientEmail, subject, body, files):
                 message.attach(myFile)
 
             else:
-                print("\npITM > File " + attachment + " skipped...")
+                log("File `" + attachment + "` skipped")
+                print("\npITM > File `" + attachment + "` skipped")
 
         # Save the raw string
         raw_string = base64.urlsafe_b64encode(message.as_bytes()).decode()
+
+        print("\npITM > Files attached...")
+        log("Files attached")
 
         # Sends the email using 'me' as the authenticated account
         response = service.users().messages().send(
@@ -205,35 +241,111 @@ def sendEmail(recipientEmail, subject, body, files):
             body={'raw': raw_string}
         ).execute()
 
-
-
         print("\nRESPONSE > " + str(response))
+        log("Response: " + str(response))
 
     except HttpError as error:
-        print(F'An error occurred: {error}')
+        log("HttpError triggered")
+        terminate(error)
 
     except socket.gaierror and httplib2.error.ServerNotFoundError as error:
-        print(F'\nIs the internet is off? {error}')
+        print(F'\npITM > Is the internet off? {error}')
+        log("Is the internet off? Socket or ServerNotFound error triggered")
         if input("Press `q` to quit, or enter to try again: ") == 'q':
-            sys.exit(0)
+            terminate(error)
 
 
-
+# Main method
 def main():
     # Authenticate on startup and store the credential token in `data/auth/token.pickle`
-    auth()
+    try:
+        auth()
+    except FileNotFoundError as e:
+        print("\npITM > Your client_secret.json file is missing!")
+        log("The client_secret.json file wasn't found in 'data/auth' ")
+        terminate(e)
 
     # Get the template ID from the user
-    templateID = input("pITM > Enter the name of the template to use, or press enter to use the default template: ")
+    templateID = input("\npITM > Enter the name of the template to use, or press enter to use the default template: ")
+    log("User specified `templateID`: " + templateID)
 
     # If nothing specified, template is set to default
     if templateID is None or "":
         templateID = "default"
+        log("Using default template")
 
-    # Compose the emails
-    composeMail(template=templateID)
+    # ISSUE 3: https://github.com/JohnKearney1/pITM/issues/3
+    # load the contacts, done in main so we only do this once
+    mailingList = templateParser.loadContacts()
+
+    print("\n======== Mailing List ========")
+    log("======== Mailing List ========")
+
+    x = 1
+    for recipient in mailingList:
+        log(recipient.__str__())
+        print(x.__str__() + "] " + recipient.__str__())
+        x = x + 1
+
+    _, _ = composeMail(index=0, template=templateID, mailingList=mailingList)
+
+    log("THE ABOVE IS AN EXAMPLE EMAIL - IT WAS NOT SENT")
+
+    # Allow user to confirm sends
+    lastChance = input("\npITM > This is an example email.\n\npITM > Look good? Press enter to send or q "
+                       "to quit: ")
+
+    if lastChance.lower() == "q":
+        log("User chose to terminate the program")
+        terminate(None)
+
+    log("User approved template email, sending all emails now")
+
+    index = 0
+    for recipient in mailingList:
+        # Feed info into the templating engine to write the email
+        subject, body = composeMail(index=index, template=templateID, mailingList=mailingList)
+
+        # Pause execution to ensure we don't exceed rate limits (usually not an issue, this is just a safeguard)
+        time.sleep(0.75)
+
+        # Upload the attachments and send the email
+        sendEmail(recipientEmail=recipient[0], subject=subject, body=body,
+                  files=getFiles("data/files"))
+
+        # Iterate index
+        index = index + 1
 
 
-# Press the green button in the gutter to run the script.
+# Kills the program and prints an error if one is provided
+# > error -> OBJ : Denotes that the exit is an error, obj holds error information.
+# > error -> None : Denotes that the exit is intentional.
+def terminate(error):
+    if error is not None:
+        log("Error: " + error.__str__())
+        sys.exit("\npITM > Error: " + error.__str__())
+
+    else:
+        log("Exiting")
+        sys.exit("\npITM > Exiting...")
+
+
+# Press the green button in the gutter to run the script
 if __name__ == '__main__':
-    main()
+    try:
+
+        # Generate a new log.txt
+        newLog()
+
+        # Run the main logic
+        main()
+
+        # When main logic finishes, say goodbye & terminate with no errors!
+        print("\npITM > Finished!")
+        log("Finished!")
+        terminate(None)
+
+    # If user force stops program print this:
+    except KeyboardInterrupt as e:
+        print("\n\npITM > Execution Halted")
+        log("Execution Halted: " + str(e))
