@@ -4,7 +4,7 @@ This project seeks to be a no-nonsense, lightweight solution for free, open sour
 
 pITM takes in a list of emails and first names, then composes personalized emails using custom templates to reach out to every contact individually.
 Using CC and BCC is easy and fast, but largely ineffective in the music industry, as a feeling of *inexclusivity* towards material is discouraging for producers, artists, and engineers.
-i.e: When hundreds of audio professionals all get the same email, they immediately realize they were 1/800 people to recieve the same six loops or beats and don't even look at them.
+i.e: When hundreds of audio professionals all get the same email, they immediately realize they were 1/800 people to recieve the same six loops or beats and don't even look at them. This project circumvents that for you.
 
 **WARNING: THIS PROJECT IS A WORK IN PROGRESS USE AT YOUR OWN RISK. BUGS EXIST.**
 
