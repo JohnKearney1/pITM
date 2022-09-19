@@ -45,7 +45,7 @@ DO NOT keep any files you DO NOT want attached in this folder during actual usag
 07 │  ├─ templates/  
 08 │  │  ├─ TEMPLATES GUIDE.md  
 09 │  │  └─ Templates.json  
-10 │  │ Contacts.txt  
+10 │  ├─ Contacts.txt  
 11 │  └─log.txt  
 12 ├─ README.md  
 13 ├─ DOCS.md  
