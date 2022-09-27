@@ -2,6 +2,7 @@
 # pITM - v1.1.1
 
 # System Imports
+import _pickle
 import mimetypes
 import os
 import pickle
@@ -10,6 +11,7 @@ import sys
 import time
 
 # From Google (oauth 2.0 flow & requests class)
+import google.auth.exceptions
 import oauthlib.oauth2.rfc6749.errors
 
 import templateParser
@@ -32,7 +34,22 @@ from email.mime.base import MIMEBase
 from datetime import datetime
 
 
-# On startup, we clear the log.txt
+# terminate: Kills the program and prints an error if one is provided
+# > error -> OBJ : Denotes that the exit is an error, obj holds error information.
+# > error -> None : Denotes that the exit is intentional.
+def terminate(error):
+    # If the error is an object, log & print out the contents of the error
+    if error is not None:
+        log("Error: " + error.__str__())
+        sys.exit("\npITM > Error: " + error.__str__())
+
+    # If the error param contains nothing (None) log the exit and quit
+    else:
+        log("Exiting")
+        sys.exit("\npITM > Exiting...")
+
+
+# newLog: Creates or clears the error log at data/log.txt
 def newLog():
     # Create a new log.txt or clear the existing one
     with open('data/log.txt', 'w') as f:
@@ -49,7 +66,8 @@ def newLog():
         f.close()
 
 
-# Writes some text to the file with the time
+# log: Writes some text to the file with the current time
+# > text -> STRING : Single line of text to add to the `log.txt` file. Do not include newline chars unless necessary.
 def log(text):
     # Open the log in append mode `a`
     with open('data/log.txt', 'a') as f:
@@ -66,12 +84,27 @@ def log(text):
         f.close()
 
 
-# Authentication with Google OAuth
-# AUTH IS COMPLETED VIA WEB BROWSER
+# eatPickle: This method destroys the cached pickle credential so a new one can be generated
+def eatPickle():
+    print("\npITM > Removing Cached Credential (token.pickle)")
+    log("Removing Cached Credential (token.pickle)")
+    # Check if the file exists before removal
+    if os.path.exists("data/auth/token.pickle"):
+        os.remove("data/auth/token.pickle")
+        print("\npITM > Cache Cleared!")
+        log("Cache Cleared!")
+    else:
+        print("\npITM > We couldn't find any pickles to eat...")
+        log("Credential cache file not found... Nothing removed... ")
+
+
+# auth: Preforms authentication with Google OAuth and saves to a cache credential, OR loads from an existing cache
 # > client_secret_json -> STRING : Relative location of the client_secret.json file
 def auth(client_secret_json="data/auth/client_secret.json"):
+    # object to hold our credentials once we get them
+    credentials = None
+
     try:
-        credentials = None
 
         # token.pickle stores the user's credentials from previously successful logins
         if os.path.exists('data/auth/token.pickle'):
@@ -112,9 +145,29 @@ def auth(client_secret_json="data/auth/client_secret.json"):
                     log("Saving credentials to cache")
                     pickle.dump(credentials, f)
                     log("Credentials saved to 'data/auth/token.pickle'")
+
+    # Error handling
     except oauthlib.oauth2.rfc6749.errors.AccessDeniedError as error:
         print("\npITM > Looks like you denied us access during OAuth. Without that, we can't send any emails!")
         log("User canceled authentication before it was complete")
+        terminate(error)
+
+    except google.auth.exceptions.RefreshError as error:
+        print("\npITM > Your access token has expired... Fetching a new one!")
+        log("Access token expired, going to delete it now and re-authorize: " + str(error))
+        eatPickle()
+        auth()
+
+
+
+    # token.pickle corrupted
+    except _pickle.UnpicklingError as error:
+        print(
+            "\npITM > Your cached credential file has been tampered with! We're clearing the cache now so you can "
+            "restart...")
+
+        # eatPickle method destroys the token.pickle file in data/auth so a new one can be generated.
+        eatPickle()
         terminate(error)
 
     # Now we have our credentials (token, refresh_token, token_uri, client_id, client_seceret, scopes)
@@ -317,21 +370,9 @@ def main():
         index = index + 1
 
 
-# Kills the program and prints an error if one is provided
-# > error -> OBJ : Denotes that the exit is an error, obj holds error information.
-# > error -> None : Denotes that the exit is intentional.
-def terminate(error):
-    if error is not None:
-        log("Error: " + error.__str__())
-        sys.exit("\npITM > Error: " + error.__str__())
-
-    else:
-        log("Exiting")
-        sys.exit("\npITM > Exiting...")
-
-
 # Press the green button in the gutter to run the script
 if __name__ == '__main__':
+
     try:
 
         # Generate a new log.txt

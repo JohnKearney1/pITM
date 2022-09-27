@@ -1,0 +1,52 @@
+09/27/2022 03:04:30 > pITM Started
+03:04:30 > Loading credentials from cache
+03:04:30 > Credentials loaded
+03:04:30 > Refreshing access token
+03:04:31 > Access token expired, going to delete it now and re-authorize: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})
+03:04:31 > Removing Cached Credential (token.pickle)
+03:04:31 > Cache Cleared!
+03:04:31 > Fetching new tokens
+03:04:56 > Saving credentials to cache
+03:04:56 > Credentials saved to 'data/auth/token.pickle'
+03:05:04 > User specified `templateID`: 
+03:05:04 > ======== Mailing List ========
+03:05:04 > ['mgmt@kearneyjohn.com', 'John']
+03:05:04 > Using the default template:  not found
+03:05:04 > Email No.1
+03:05:04 > Name: John
+03:05:04 > E-Mail: mgmt@kearneyjohn.com
+03:05:04 > Subject: Default Subject
+03:05:04 > Body: 
+
+Hey!
+The default body should not include any name variables!
+This is because the program has to have a fallback template in the event a contact email doesn't have an associated name!
+
+- Devs
+@gawxy
+
+
+03:05:04 > THE ABOVE IS AN EXAMPLE EMAIL - IT WAS NOT SENT
+03:05:46 > User approved template email, sending all emails now
+03:05:46 > Using the default template:  not found
+03:05:46 > Email No.1
+03:05:46 > Name: John
+03:05:46 > E-Mail: mgmt@kearneyjohn.com
+03:05:46 > Subject: Default Subject
+03:05:46 > Body: 
+
+Hey!
+The default body should not include any name variables!
+This is because the program has to have a fallback template in the event a contact email doesn't have an associated name!
+
+- Devs
+@gawxy
+
+
+03:05:47 > E-Mail Sending, awaiting response...
+03:05:47 > File `data/files/.excluded` skipped
+03:05:47 > Uploading data/files/includedTestFile.txt
+03:05:47 > Files attached
+03:05:48 > Response: {'id': '1837dc41879304d0', 'threadId': '1837dc41879304d0', 'labelIds': ['SENT']}
+03:05:48 > Finished!
+03:05:48 > Exiting

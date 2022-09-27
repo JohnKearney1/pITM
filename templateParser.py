@@ -45,13 +45,17 @@ def loadTemplate(template, name):
         f.close()
 
     except KeyError as e:
-        log("`Templates.json` appears to be misconfigured. Check your json keys.")
+        log("`Templates.json` appears to be misconfigured. Check your json keys... " + str(e))
         sys.exit("\npITM > Your templates.json file looks misconfigured... Make sure you have a `subject` and a `body` "
                  "key in each template.")
 
     except FileNotFoundError as e:
-        log("`Templates.json` is missing from the `data/templates/` directory")
+        log("`Templates.json` is missing from the `data/templates/` directory" + str(e))
         sys.exit("\npITM > Your templates.json file is missing!")
+
+    except json.decoder.JSONDecodeError as e:
+        log("Looks like your `Templates.json` may be empty..." + str(e))
+        sys.exit("\npITM > Looks like your `Templates.json` may be empty...")
 
     return formattedSubject, formattedBody
 
@@ -72,7 +76,6 @@ def loadContacts():
     mailingList = [[""] * 2] * size
 
     x = 0
-    y = 0
     with open('data/Contacts.txt') as f:
 
         try:
