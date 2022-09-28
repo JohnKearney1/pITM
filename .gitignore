@@ -4,3 +4,4 @@ data/auth/token.pickle
 
 __pycache__/
 .idea/
+.idea
