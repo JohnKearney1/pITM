@@ -1,5 +1,6 @@
 data/auth/client_secret.json
 data/auth/token.pickle
+data/log.txt
 
 __pycache__/
 .idea/**

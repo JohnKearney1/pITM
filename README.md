@@ -3,10 +3,23 @@ pITM ("Packs In The Mail") is a python email script designed specifically by aud
 This project seeks to be a no-nonsense, lightweight solution for free, open source e-mail marketing with the bells and whistles, but no frills.
 
 pITM takes in a list of emails and first names, then composes personalized emails using custom templates to reach out to every contact individually.
-Using CC and BCC is easy and fast, but largely ineffective in the music industry, as a feeling of *inexclusivity* towards material is discouraging for producers, artists, and engineers.
-i.e: When hundreds of audio professionals all get the same email, they immediately realize they were 1/800 people to recieve the same six loops or beats and don't even look at them. This project circumvents that for you.
+Using CC and BCC is easy and fast, but largely ineffective in the music industry, as a feeling of *in-exclusivity* towards material is discouraging for producers, artists, and engineers.
+i.e: When hundreds of audio professionals all get the same email, they immediately realize they were 1/800 people to receive the same six loops or beats and don't even look at them. This project circumvents that for you.
 
-**WARNING: THIS PROJECT IS A WORK IN PROGRESS USE AT YOUR OWN RISK. BUGS EXIST.**
+I developed pITM with two specific use cases in mind.
+1. Producer Networking - Allows producers to quickly and efficiently send loops, beats, midis, or other files with high efficiency, and a personal touch.
+2. Artist Marketing - Allows artists to efficiently contact hundreds of DJ's, Radio Hosts, playlisters and A&R's simultaneously with personalized, meaningful messages.
+
+Pre-cursory testing shows a higher engagement rate (on average) with personalized emails sent by pITM over normal BCC or CC contact. 
+
+## Support  
+**WARNING: THIS PROJECT IS A WORK IN PROGRESS. USE AT YOUR OWN RISK. BUGS EXIST.**
+
+**Developer Contact:** [Click Here](mailto:pitm@kearneyjohn.com)
+
+**Homepage:** [Click Here](https://github.com/JohnKearney1/pITM)
+
+**Developer Homepage** [Click Here](https://kearneyjohn.com)
 
 
 # Developers: First Time Setup
@@ -15,24 +28,6 @@ i.e: When hundreds of audio professionals all get the same email, they immediate
 > > **Note:** File must be named `client_secret.json`, rename the file if it is not by default.
 > 2. Edit the `Contacts.txt` to include your contacts and names
 > > **Note:** They should be specified in the format `<email> <firstName>`
-
-
-## Release Notes - v1.1.0
-This version focuses primarily on error handling and logging. I've added logging methods to all three python files to 
-print verbose output to `data/log.txt`.
-
-You can log something like this: `log("This will appear in the log with a timestamp!")`
-
-I've also surrounded a good majority of the code in exception handling blocks with log output to help debug issues.
-Missing or misconfigured files, connection errors and more are all handled with this update although as more execution 
-flow possibilities are discovered more may be added.
-
-I've also updated the templates guide, Readme (duh), and added an example client_secret file for dev purposes.
-No API keys are in the example file.
-
-The `data/files/` folder now has some extra logic to skip over any files that begin with a `.` to prevent hidden directories
-from being accidentally attached. There are two included test files for dev purposes. 
-DO NOT keep any files you DO NOT want attached in this folder during actual usage.
 
 # Architecture
 

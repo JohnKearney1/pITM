@@ -3,6 +3,7 @@
 
 # System Imports
 import _pickle
+import json
 import mimetypes
 import os
 import pickle
@@ -14,7 +15,6 @@ import time
 import google.auth.exceptions
 import oauthlib.oauth2.rfc6749.errors
 
-import templateParser
 from Google import Create_Service
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -82,6 +82,112 @@ def log(text):
 
         # Close the file
         f.close()
+
+
+# > This method retrieves the TEMPLATE email from a json file in the script's templates folder
+def loadTemplate(template, name):
+    formattedSubject = ""
+    formattedBody = ""
+    try:
+        # Open the Templates json
+        f = open('data/templates/Templates.json')
+        data = json.load(f)
+
+        # Check if template exists in json
+        if template in data:
+            log("Using " + str(template) + " as the template")
+            # use the specified template if so
+            subject = data[template]['subject']
+            body = data[template]['body']
+
+        # use the default template if not
+        else:
+            log("Using the default template: " + str(template) + " not found")
+            subject = data['default']['subject']
+            body = data['default']['body']
+
+        # If any name variables exist in the body, replace them with the name
+        if body.find("{NAME}") >= 0:
+            formattedBody = body.replace("{NAME}", name)
+            log("Found name variables in the body, replacing them now")
+        else:
+            formattedBody = body
+
+        if subject.find("{NAME}") >= 0:
+            # Handle {NAME} variables
+            formattedSubject = subject.replace("{NAME}", name)
+            log("Found name variables in the subject, replacing them now")
+        else:
+            formattedSubject = subject
+
+        f.close()
+
+    except KeyError as e:
+        log("`Templates.json` appears to be misconfigured. Check your json keys... " + str(e))
+        sys.exit("\npITM > Your templates.json file looks misconfigured... Make sure you have a `subject` and a `body` "
+                 "key in each template.")
+
+    except FileNotFoundError as e:
+        log("`Templates.json` is missing from the `data/templates/` directory" + str(e))
+        sys.exit("\npITM > Your templates.json file is missing!")
+
+    except json.decoder.JSONDecodeError as e:
+        log("Looks like your `Templates.json` may be empty..." + str(e))
+        sys.exit("\npITM > Looks like your `Templates.json` may be empty...")
+
+    return formattedSubject, formattedBody
+
+
+# Gets the mailingList from `data/Contacts.txt` and returns it as a 2d Array
+def loadContacts():
+    try:
+        # Get number of lines in text file
+        with open('data/Contacts.txt') as f:
+            text = f.readlines()
+            size = len(text)
+    except FileNotFoundError as e:
+        log("`Contacts.txt` is missing from the `data/` folder")
+        sys.exit("\npITM > Your Contacts.txt is missing!")
+
+    # Use that size to init a 2d array
+    mailingList = [[""] * 2] * size
+
+    x = 0
+    with open('data/Contacts.txt') as f:
+
+        try:
+            nextLine = True
+            while nextLine:
+                # Read the first line and split into 2 substrings: email & name
+                line = f.readline()
+
+                # print(line)
+                substring = line.split(" ")
+
+                # print(substring)
+
+                # Remove \n (new line) escape code
+                substring[0] = substring[0].replace('\n', '')
+
+                if len(substring) > 1:
+                    # Remove \n (new line) escape code
+                    substring[1] = substring[1].replace('\n', '')
+
+                    # Set the substring list to the current iter of our mailingList
+
+                mailingList[x] = substring
+
+                # Iterate & ensure we haven't read all the lines in the file yet, if we have then break
+                x = x + 1
+                if x >= size:
+                    nextLine = False
+
+        # Can't access the email or names in Contacts.txt at startup? Tell the user then kill the program.
+        except IndexError as e:
+            log("The `Contacts.txt` file in `data/` is empty")
+            sys.exit("\npITM > Your Contacts.txt is empty!")
+
+    return mailingList
 
 
 # eatPickle: This method destroys the cached pickle credential so a new one can be generated
@@ -152,13 +258,12 @@ def auth(client_secret_json="data/auth/client_secret.json"):
         log("User canceled authentication before it was complete")
         terminate(error)
 
+    # token.pickle expired (recursive)
     except google.auth.exceptions.RefreshError as error:
         print("\npITM > Your access token has expired... Fetching a new one!")
         log("Access token expired, going to delete it now and re-authorize: " + str(error))
         eatPickle()
         auth()
-
-
 
     # token.pickle corrupted
     except _pickle.UnpicklingError as error:
@@ -180,7 +285,7 @@ def auth(client_secret_json="data/auth/client_secret.json"):
 # > index -> INT : index of the mailingList entry to search. 0 by default.
 # > template -> STRING : json key string of the Template to use, uses default template by default.
 # > mailingList -> STRING ARRAY (2D) : Holds the email and name of each recipient. Loads from Contacts.txt by default.
-def composeMail(index=0, template="default", mailingList=templateParser.loadContacts()):
+def composeMail(index=0, template="default", mailingList=loadContacts()):
     # mailingList[index][0] == email addr
     # mailingList[index][1] == name
     # mailingList[index] == ['<email>', '<name>']
@@ -188,11 +293,11 @@ def composeMail(index=0, template="default", mailingList=templateParser.loadCont
     # If recipient has an email AND a name entry use this template
     if len(mailingList[index]) > 1:
         # Load a custom template for the current recipient
-        subject, body = templateParser.loadTemplate(name=mailingList[index][1], template=template)
+        subject, body = loadTemplate(name=mailingList[index][1], template=template)
 
     # Otherwise use this template
     else:
-        subject, body = templateParser.loadTemplate(template=template)
+        subject, body = loadTemplate(template=template)
 
     # Tell the user what the email looks like:
     print("\nEmail No." + (index + 1).__str__())
@@ -313,6 +418,7 @@ def main():
     # Authenticate on startup and store the credential token in `data/auth/token.pickle`
     try:
         auth()
+
     except FileNotFoundError as e:
         print("\npITM > Your client_secret.json file is missing!")
         log("The client_secret.json file wasn't found in 'data/auth' ")
@@ -329,7 +435,7 @@ def main():
 
     # ISSUE 3: https://github.com/JohnKearney1/pITM/issues/3
     # load the contacts, done in main so we only do this once
-    mailingList = templateParser.loadContacts()
+    mailingList = loadContacts()
 
     print("\n======== Mailing List ========")
     log("======== Mailing List ========")

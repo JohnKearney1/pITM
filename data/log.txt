@@ -1,2 +1,23 @@
-09/28/2022 13:06:52 > pITM Started
-13:06:52 > Fetching new tokens
+10/02/2022 03:41:25 > pITM Started
+03:41:25 > Loading credentials from cache
+03:41:25 > Credentials loaded
+03:41:27 > User specified `templateID`: 
+03:41:27 > ======== Mailing List ========
+03:41:27 > ['mgmt@kearneyjohn.com', 'John']
+03:41:27 > Using the default template:  not found
+03:41:27 > Email No.1
+03:41:27 > Name: John
+03:41:27 > E-Mail: mgmt@kearneyjohn.com
+03:41:27 > Subject: Default Subject
+03:41:27 > Body: 
+
+Hey!
+The default body should not include any name variables!
+This is because the program has to have a fallback template in the event a contact email doesn't have an associated name!
+
+- Devs
+@gawxy
+
+
+03:41:27 > THE ABOVE IS AN EXAMPLE EMAIL - IT WAS NOT SENT
+03:42:31 > Execution Halted: 
